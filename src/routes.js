@@ -8,6 +8,7 @@ import adminMiddleware from './app/middlewares/admin';
 import EnrollmentController from './app/controllers/EnrollmentController';
 import CheckinController from './app/controllers/CheckinController';
 import HelpOrderController from './app/controllers/HelpOrderController';
+import SearchStudentController from './app/controllers/SearchStudentController';
 
 const routes = new Router();
 
@@ -17,8 +18,14 @@ const routes = new Router();
 routes.get('/sessions', SessionController.store);
 
 /**
- * Realiza check-in.
+ * Busca um aluno.
  */
+routes.get('/search-students/:id', SearchStudentController.store);
+
+/**
+ * Check-ins.
+ */
+routes.get('/students/:student_id/checkins', CheckinController.index);
 routes.post('/students/:student_id/checkins', CheckinController.store);
 
 /**
@@ -42,11 +49,6 @@ routes.use(adminMiddleware);
 routes.get('/students', StudentController.index);
 routes.post('/students', StudentController.store);
 routes.put('/students/:id', StudentController.update);
-
-/**
- * Lista check-ins.
- */
-routes.get('/students/:student_id/checkins', CheckinController.index);
 
 /**
  * Responde a um pedido de auxílio.

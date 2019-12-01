@@ -8,7 +8,8 @@ class Checkins {
         const checkin = await Checkin.findAll({
             where: {
                 student_id: req.params.student_id
-            }
+            },
+            order: [['id', 'DESC']]
         });
 
         return res.status(200).json(checkin);
@@ -36,7 +37,7 @@ class Checkins {
 
         if (chekins && chekins.length >= 5) {
             return res
-                .status(400)
+                .status(401)
                 .json({ error: 'Student has already 5 check-ins this week!' });
         }
 
