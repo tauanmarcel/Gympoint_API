@@ -1,7 +1,6 @@
 import * as Yup from 'yup';
 
 import Student from '../models/Student';
-import User from '../models/User';
 
 class StudentController {
     async index(_, res) {
@@ -51,12 +50,6 @@ class StudentController {
 
         if (!(await schema.isValid(req.body))) {
             return res.status(400).json({ error: 'Validation fails' });
-        }
-
-        const { admin } = await User.findByPk(req.userId);
-
-        if (!admin) {
-            return res.status(400).json({ error: 'You is not a admin user.' });
         }
 
         const student = await Student.findByPk(req.params.id);

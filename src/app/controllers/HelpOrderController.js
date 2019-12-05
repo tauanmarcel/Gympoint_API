@@ -31,7 +31,8 @@ class HelpOrderController {
         const helpOrders = await HelpOrder.findAll({
             where: {
                 student_id
-            }
+            },
+            order: [['id', 'DESC']]
         });
 
         if (!helpOrders) {

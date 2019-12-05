@@ -4,7 +4,6 @@ import StudentController from './app/controllers/StudentController';
 import PlanController from './app/controllers/PlanController';
 
 import authMiddleware from './app/middlewares/auth';
-import adminMiddleware from './app/middlewares/admin';
 import EnrollmentController from './app/controllers/EnrollmentController';
 import CheckinController from './app/controllers/CheckinController';
 import HelpOrderController from './app/controllers/HelpOrderController';
@@ -29,19 +28,17 @@ routes.get('/students/:student_id/checkins', CheckinController.index);
 routes.post('/students/:student_id/checkins', CheckinController.store);
 
 /**
- * Cria um pedido de auxílio.
+ * Pedido de auxílio.
  */
 routes.post('/students/:student_id/help-orders', HelpOrderController.store);
-
+routes.get(
+    '/help-orders/:student_id/list-for-student',
+    HelpOrderController.listForStudent
+);
 /**
  * Esse Middleware permite que apenas usuários Autenticados acessem as rotas seguintes.
  */
 routes.use(authMiddleware);
-
-/**
- * Esse Middleware permite que apenas os usuários Administradores acessem as rotas seguintes.
- */
-routes.use(adminMiddleware);
 
 /**
  * Rotas para gegrenciar os alunos.
@@ -53,15 +50,8 @@ routes.put('/students/:id', StudentController.update);
 /**
  * Responde a um pedido de auxílio.
  */
-routes.get('/gympoint.com/help-orders', HelpOrderController.index);
-routes.get(
-    '/gympoint.com/help-orders/:student_id/list-for-student',
-    HelpOrderController.listForStudent
-);
-routes.post(
-    '/gympoint.com/help-orders/:student_id/answer/:id',
-    HelpOrderController.answer
-);
+routes.get('/help-orders', HelpOrderController.index);
+routes.post('/help-orders/:student_id/answer/:id', HelpOrderController.answer);
 
 /**
  * Rotas para gerenciar os planos.
