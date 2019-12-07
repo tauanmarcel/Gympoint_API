@@ -20,6 +20,9 @@ class HelpOrderController {
     }
 
     async listForStudent(req, res) {
+        const { page = 1 } = req.query;
+        const limit = 3;
+
         const { student_id } = req.params;
 
         const student = await Student.findByPk(student_id);
@@ -32,7 +35,9 @@ class HelpOrderController {
             where: {
                 student_id
             },
-            order: [['id', 'DESC']]
+            order: [['id', 'DESC']],
+            limit,
+            offset: (page - 1) * limit
         });
 
         if (!helpOrders) {

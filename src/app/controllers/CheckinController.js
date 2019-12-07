@@ -5,11 +5,16 @@ import Student from '../models/Student';
 
 class Checkins {
     async index(req, res) {
+        const { page = 1 } = req.query;
+        const limit = 10;
+
         const checkin = await Checkin.findAll({
             where: {
                 student_id: req.params.student_id
             },
-            order: [['id', 'DESC']]
+            order: [['id', 'DESC']],
+            limit,
+            offset: (page - 1) * limit
         });
 
         return res.status(200).json(checkin);

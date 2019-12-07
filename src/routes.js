@@ -41,14 +41,14 @@ routes.get(
 routes.use(authMiddleware);
 
 /**
- * Rotas para gegrenciar os alunos.
+ * Rotas para gerenciar os alunos.
  */
 routes.get('/students', StudentController.index);
 routes.post('/students', StudentController.store);
 routes.put('/students/:id', StudentController.update);
 
 /**
- * Responde a um pedido de auxílio.
+ * Pedidos de auxílio.
  */
 routes.get('/help-orders', HelpOrderController.index);
 routes.post('/help-orders/:student_id/answer/:id', HelpOrderController.answer);
