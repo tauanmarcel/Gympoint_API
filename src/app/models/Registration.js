@@ -1,6 +1,7 @@
 import Sequelize, { Model } from 'sequelize';
+import { isBefore, isAfter } from 'date-fns';
 
-class Enrollment extends Model {
+class Registration extends Model {
     static init(sequelize) {
         super.init(
             {
@@ -25,9 +26,16 @@ class Enrollment extends Model {
                     allowNull: false
                 },
                 active: {
-                    type: Sequelize.BOOLEAN,
-                    allowNull: false,
-                    defaultValue: true
+                    type: Sequelize.VIRTUAL(Sequelize.BOOLEAN, [
+                        'start_date',
+                        'end_date'
+                    ]),
+                    get() {
+                        return (
+                            isBefore(this.get('start_date'), new Date()) &&
+                            isAfter(this.get('end_date'), new Date())
+                        );
+                    }
                 }
             },
             {
@@ -51,4 +59,4 @@ class Enrollment extends Model {
     }
 }
 
-export default Enrollment;
+export default Registration;

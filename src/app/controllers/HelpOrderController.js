@@ -5,11 +5,19 @@ import Queue from '../../lib/Queue';
 import AnswerMail from '../jobs/AnswerMail';
 
 class HelpOrderController {
-    async index(req, res) {
+    async index(_, res) {
         const helpOrders = await HelpOrder.findAll({
             where: {
                 answer: null
-            }
+            },
+            include: [
+                {
+                    model: Student,
+                    as: 'student',
+                    attributes: ['id', 'name']
+                }
+            ],
+            order: [['student', 'name', 'asc']]
         });
 
         if (!helpOrders) {

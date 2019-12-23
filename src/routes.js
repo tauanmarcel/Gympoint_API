@@ -4,22 +4,21 @@ import StudentController from './app/controllers/StudentController';
 import PlanController from './app/controllers/PlanController';
 
 import authMiddleware from './app/middlewares/auth';
-import EnrollmentController from './app/controllers/EnrollmentController';
+import RegistrationController from './app/controllers/RegistrationController';
 import CheckinController from './app/controllers/CheckinController';
 import HelpOrderController from './app/controllers/HelpOrderController';
-import SearchStudentController from './app/controllers/SearchStudentController';
 
 const routes = new Router();
 
 /**
  * Cria uma sessão.
  */
-routes.get('/sessions', SessionController.store);
+routes.post('/sessions', SessionController.store);
 
 /**
  * Busca um aluno.
  */
-routes.get('/search-students/:id', SearchStudentController.store);
+routes.get('/students/:id', StudentController.show);
 
 /**
  * Check-ins.
@@ -46,6 +45,7 @@ routes.use(authMiddleware);
 routes.get('/students', StudentController.index);
 routes.post('/students', StudentController.store);
 routes.put('/students/:id', StudentController.update);
+routes.delete('/students/:id', StudentController.delete);
 
 /**
  * Pedidos de auxílio.
@@ -57,6 +57,7 @@ routes.post('/help-orders/:student_id/answer/:id', HelpOrderController.answer);
  * Rotas para gerenciar os planos.
  */
 routes.get('/plans', PlanController.index);
+routes.get('/plans/:id', PlanController.show);
 routes.post('/plans', PlanController.store);
 routes.put('/plans/:id', PlanController.update);
 routes.delete('/plans/:id', PlanController.delete);
@@ -64,9 +65,10 @@ routes.delete('/plans/:id', PlanController.delete);
 /**
  * Rotas para gerenciar as matrículas.
  */
-routes.get('/enrollments', EnrollmentController.index);
-routes.post('/enrollments', EnrollmentController.store);
-routes.put('/enrollments/:id', EnrollmentController.update);
-routes.put('/enrollments/:id/disable', EnrollmentController.delete);
+routes.get('/registrations', RegistrationController.index);
+routes.get('/registrations/:id', RegistrationController.show);
+routes.post('/registrations', RegistrationController.store);
+routes.put('/registrations/:id', RegistrationController.update);
+routes.delete('/registrations/:id', RegistrationController.delete);
 
 export default routes;

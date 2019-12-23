@@ -3,13 +3,13 @@ import Sequelize from 'sequelize';
 import User from '../app/models/User';
 import Student from '../app/models/Student';
 import Plan from '../app/models/Plan';
-import Enrollment from '../app/models/Enrollment';
+import Registration from '../app/models/Registration';
 import Checkin from '../app/models/Checkin';
 import HelpOrder from '../app/models/HelpOrder';
 
 import databaseConfig from '../config/database';
 
-const models = [User, Student, Plan, Enrollment, Checkin, HelpOrder];
+const models = [User, Student, Plan, Registration, Checkin, HelpOrder];
 
 class Database {
     constructor() {
@@ -27,14 +27,6 @@ class Database {
                     model.associate && model.associate(this.connection.models)
             );
     }
-
-    // mongo() {
-    //     this.mongoConnection = mongoose.connect(process.env.MONGO_URL, {
-    //         useNewUrlParser: true,
-    //         useFindAndModify: true,
-    //         useUnifiedTopology: true
-    //     });
-    // }
 }
 
 export default new Database();

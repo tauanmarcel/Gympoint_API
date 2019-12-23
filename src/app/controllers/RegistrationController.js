@@ -7,20 +7,18 @@ import {
     addMonths,
     startOfDay
 } from 'date-fns';
+import { Op } from 'sequelize';
 
-import Enrollment from '../models/Enrollment';
+import Registration from '../models/Registration';
 import Plan from '../models/Plan';
 import Student from '../models/Student';
 
 import ConfirmationMail from '../jobs/ConfirmationMail';
 import Queue from '../../lib/Queue';
 
-class EnrollmentController {
+class RegistrationController {
     async index(_, res) {
-        const enrollment = await Enrollment.findAll({
-            where: {
-                active: true
-            },
+        const registrations = await Registration.findAll({
             attributes: ['id', 'price', 'start_date', 'active'],
             include: [
                 {
@@ -33,10 +31,38 @@ class EnrollmentController {
                     as: 'plan',
                     attributes: ['title', 'duration']
                 }
-            ]
+            ],
+            order: [['student', 'name', 'asc']]
         });
 
-        return res.status(200).json(enrollment);
+        return res.status(200).json(registrations);
+    }
+
+    async show(req, res) {
+        const { id } = req.params;
+
+        const registration = await Registration.findByPk(id, {
+            attributes: ['id', 'price', 'start_date', 'active'],
+            include: [
+                {
+                    model: Student,
+                    as: 'student',
+                    attributes: ['id', 'name', 'email']
+                },
+                {
+                    model: Plan,
+                    as: 'plan',
+                    attributes: ['id', 'title', 'duration', 'price']
+                }
+            ],
+            order: [['end_date', 'asc']]
+        });
+
+        if (!registration) {
+            return res.status(400).json({ error: 'Registration not found!' });
+        }
+
+        return res.status(200).json(registration);
     }
 
     async store(req, res) {
@@ -81,27 +107,24 @@ class EnrollmentController {
 
         const end_date = addMonths(parseISO(start_date), plan.duration);
 
-        const studentExists = await Enrollment.findOne({
+        const registrationExists = await Registration.findOne({
             where: {
                 student_id,
-                active: true
+                end_date: {
+                    [Op.gte]: new Date()
+                }
             }
         });
 
-        if (studentExists) {
-            if (
-                !isBefore(studentExists.end_date, new Date()) &&
-                studentExists.active
-            ) {
-                return res
-                    .status(400)
-                    .json({ error: 'The student already has a plan' });
-            }
+        if (registrationExists) {
+            return res
+                .status(400)
+                .json({ error: 'The student already has a plan' });
         }
 
         const price = plan.duration * plan.price;
 
-        const enrollment = await Enrollment.create({
+        const registration = await Registration.create({
             student_id,
             plan_id,
             start_date,
@@ -110,12 +133,12 @@ class EnrollmentController {
         });
 
         await Queue.add(ConfirmationMail.key, {
-            enrollment,
+            registration,
             student,
             plan
         });
 
-        return res.status(200).json(enrollment);
+        return res.status(200).json(registration);
     }
 
     async update(req, res) {
@@ -128,14 +151,14 @@ class EnrollmentController {
             return res.status(400).json({ error: 'Validation fails' });
         }
 
-        const enrollment = await Enrollment.findByPk(req.params.id);
+        const registration = await Registration.findByPk(req.params.id);
 
         /**
          * As alterações só estarão disponíveis caso o plano ainda não tenha entrado em vigência
          */
-        if (isBefore(enrollment.start_date, new Date())) {
+        if (isBefore(registration.start_date, new Date())) {
             return res.status(400).json({
-                error: "The Enrollment is don't disponible for alterations"
+                error: "The registration is don't disponible for alterations"
             });
         }
 
@@ -169,15 +192,15 @@ class EnrollmentController {
 
             const currentPlan = await Plan.findOne({
                 where: {
-                    id: enrollment.plan_id
+                    id: registration.plan_id
                 }
             });
 
             objUpdate.start_date = start_date;
             objUpdate.end_date = addMonths(start_date, currentPlan.duration);
         } else {
-            objUpdate.start_date = enrollment.start_date;
-            objUpdate.end_date = enrollment.end_date;
+            objUpdate.start_date = registration.start_date;
+            objUpdate.end_date = registration.end_date;
         }
 
         if (plan_id) {
@@ -194,7 +217,7 @@ class EnrollmentController {
                 );
             } else {
                 objUpdate.end_date = addMonths(
-                    enrollment.start_date,
+                    registration.start_date,
                     plan.duration
                 );
             }
@@ -202,30 +225,28 @@ class EnrollmentController {
             objUpdate.plan_id = plan_id;
             objUpdate.price = plan.duration * plan.price;
         } else {
-            objUpdate.plan_id = enrollment.plan_id;
-            objUpdate.price = enrollment.price;
+            objUpdate.plan_id = registration.plan_id;
+            objUpdate.price = registration.price;
         }
 
-        const updatedEnrollment = await enrollment.update(objUpdate);
+        const updatedRegistration = await registration.update(objUpdate);
 
-        return res.status(200).json(updatedEnrollment);
+        return res.status(200).json(updatedRegistration);
     }
 
     async delete(req, res) {
-        const enrollment = await Enrollment.findByPk(req.params.id);
+        const registration = await Registration.findByPk(req.params.id);
 
-        if (!enrollment) {
-            return res.status(200).json({ error: 'Enrollment not found' });
+        if (!registration) {
+            return res.status(200).json({ error: 'Registration not found' });
         }
 
-        await enrollment.update({
-            active: false
-        });
+        await registration.destroy();
 
         return res
             .status(200)
-            .json({ message: 'The enrollment has been deactivated' });
+            .json({ message: 'The registration has been deleted' });
     }
 }
 
-export default new EnrollmentController();
+export default new RegistrationController();

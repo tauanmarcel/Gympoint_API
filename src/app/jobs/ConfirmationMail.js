@@ -8,7 +8,7 @@ class ConfirmationMail {
     }
 
     async handle({ data }) {
-        const { enrollment, student, plan } = data;
+        const { registration, student, plan } = data;
 
         await Mail.sendMail({
             to: `${student.name} <${student.email}>`,
@@ -18,13 +18,13 @@ class ConfirmationMail {
                 student: student.name,
                 planName: plan.title,
                 endDate: format(
-                    parseISO(enrollment.end_date),
+                    parseISO(registration.end_date),
                     "dd 'de' MMMM 'de' Y",
                     {
                         locale: ptBR
                     }
                 ),
-                price: enrollment.price
+                price: registration.price
             }
         });
     }

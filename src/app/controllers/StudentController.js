@@ -1,10 +1,31 @@
 import * as Yup from 'yup';
+import Sequelize, { Op } from 'sequelize';
 
 import Student from '../models/Student';
 
 class StudentController {
-    async index(_, res) {
-        const student = await Student.findAll();
+    async index(req, res) {
+        const { name = '' } = req.query;
+
+        const student = await Student.findAll({
+            where: Sequelize.where(
+                Sequelize.fn('lower', Sequelize.col('name')),
+                { [Op.like]: Sequelize.fn('lower', `%${name}%`) }
+            ),
+            order: [['name', 'ASC']]
+        });
+
+        return res.status(200).json(student);
+    }
+
+    async show(req, res) {
+        const { id } = req.params;
+
+        const student = await Student.findByPk(id);
+
+        if (!student) {
+            return res.status(400).json({ error: 'Student not found!' });
+        }
 
         return res.status(200).json(student);
     }
@@ -15,7 +36,7 @@ class StudentController {
             email: Yup.string()
                 .email()
                 .required(),
-            birht: Yup.date().required(),
+            birth: Yup.date().required(),
             weight: Yup.number().required(),
             height: Yup.number().required()
         });
@@ -43,7 +64,7 @@ class StudentController {
         const schema = Yup.object().shape({
             name: Yup.string(),
             email: Yup.string().email(),
-            birht: Yup.date(),
+            birth: Yup.date(),
             weight: Yup.number(),
             height: Yup.number()
         });
@@ -61,6 +82,20 @@ class StudentController {
         const studentUpdated = await student.update(req.body);
 
         return res.status(200).json(studentUpdated);
+    }
+
+    async delete(req, res) {
+        const student = await Student.findByPk(req.params.id);
+
+        if (!student) {
+            return res.status(400).json({ error: 'Student not found!' });
+        }
+
+        if (!student.destroy()) {
+            return res.json({ error: 'Error deleting student' });
+        }
+
+        return res.json({ message: 'Student has deleted successfully!' });
     }
 }
 

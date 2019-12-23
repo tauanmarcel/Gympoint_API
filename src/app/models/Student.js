@@ -4,11 +4,26 @@ class Student extends Model {
     static init(sequelize) {
         super.init(
             {
-                name: Sequelize.STRING,
-                email: Sequelize.STRING,
-                birht: Sequelize.DATE,
-                weight: Sequelize.FLOAT,
-                height: Sequelize.FLOAT
+                name: {
+                    type: Sequelize.STRING,
+                    allowNull: false
+                },
+                email: {
+                    type: Sequelize.STRING,
+                    allowNull: false
+                },
+                birth: {
+                    type: Sequelize.DATE,
+                    allowNull: false
+                },
+                weight: {
+                    type: Sequelize.FLOAT,
+                    allowNull: false
+                },
+                height: {
+                    type: Sequelize.FLOAT,
+                    allowNull: false
+                }
             },
             {
                 sequelize
